@@ -25,6 +25,11 @@ SECRET_KEY = '_z2^&8b=&$fv4aacg6s+8#j)ff1*pdoz!^@4sc-(dd=de36-_q'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+print(MEDIA_ROOT)
+
+
 ALLOWED_HOSTS = []
 
 
@@ -40,9 +45,10 @@ INSTALLED_APPS = [
 
     'django_extensions',
     'members.apps.MembersConfig',
+    'phonenumber_field',
 ]
 
-AUTH_USER_MODEL = 'config.Members'
+AUTH_USER_MODEL = 'members.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
