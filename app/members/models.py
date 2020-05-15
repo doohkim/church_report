@@ -33,6 +33,7 @@ class UserManager(BaseUserManager):
         return self._create_user(email, name, password, **extra_fields)
 
     def create_superuser(self, email, name, password, **extra_fields):
+        # 왜 계속 오류나는 거지
         # extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)

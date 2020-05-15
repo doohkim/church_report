@@ -13,15 +13,22 @@ class UserSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=30, allow_blank=True)
     is_superuser = serializers.BooleanField(default=False)
     is_active = serializers.BooleanField(default=False)
-    recent_attend_date = serializers.DateField(default=datetime.date.today)
+    recent_attend_date = serializers.DateField(
+        default=datetime.date.today,
+        format='%Y-%m-%d',
+        input_formats=['%Y-%m-%d', 'iso-8601'])
     # created = serializers.DateTimeField()
     # updated = serializers.DateTimeField()
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
 
-    # def update(self, instance, validated_data):
-    #     instance.email = validated_data.get('email', instance.email)
-    #     instance.name = validated_data.get('name', instance.name)
-    #     instance.recent_attend_date = validated_data.get('recent_attend_date', instance.recent_attend_date)
-    #     return instance
+    def update(self, instance, validated_data):
+        try:
+            instance.email = validated_data.get('email', instance.email)
+            instance.name = validated_data.get('name', instance.name)
+        except Exception as ex:
+            print('에러 발생', ex)
+        print(validated_data.get('recent_attend_date', instance.recent_attend_date))
+        instance.recent_attend_date = validated_data.get('recent_attend_date', instance.recent_attend_date)
+        return instance
