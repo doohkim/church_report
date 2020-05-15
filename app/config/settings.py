@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'members.apps.MembersConfig',
     'phonenumber_field',
+    'rest_framework',
 ]
 
 AUTH_USER_MODEL = 'members.User'
@@ -116,7 +117,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ko'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 

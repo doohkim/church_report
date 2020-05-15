@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 # from django.contrib.auth.models import AbstractUser
@@ -12,43 +14,44 @@ class UserManager(BaseUserManager):
     # 무엇인지 파악 못하고 쓰는 것
     use_in_migrations = True
 
-    def _create_user(self, email, name, password=None, *args, **kwargs):
+    def _create_user(self, email, name, password=None, **extra_fields):
+        print(extra_fields)
         if not email:
             raise ValueError('The given email must be set')
         email = self.normalize_email(email)
-        user = self.model(email=email, name=name, *args, **kwargs)
+        user = self.model(email=email, name=name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, email=None, name=None, password=None, *args, **kwargs):
-        kwargs.setdefault('is_staff', False)
-        kwargs.setdefault('is_superuser', False)
-        kwargs.setdefault('is_active', False)
+    def create_user(self, email=None, name=None, password=None, **extra_fields):
+        # extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault('is_active', False)
+        extra_fields.setdefault('is_admin', False)
 
-        return self._create_user(email, name, password, *args, **kwargs)
+        return self._create_user(email, name, password, **extra_fields)
 
-    def create_superuser(self, email, name, password, *args, **kwargs):
-        kwargs.setdefault('is_staff', True)
-        kwargs.setdefault('is_superuser', True)
-        kwargs.setdefault('is_active', True)
-
-        if kwargs.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
-        if kwargs.get('is_superuser') is not True:
+    def create_superuser(self, email, name, password, **extra_fields):
+        # extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('is_admin', True)
+        # if extra_fields.get('is_staff') is not True:
+        #     raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
+        if extra_fields.get('is_active') is not True:
+            raise ValueError('Superuser must have is_active=True.')
+        if extra_fields.get('is_admin') is not True:
+            raise ValueError('Superuser must have is_admin=True.')
 
-        return self._create_user(email, name, password, *args, **kwargs)
+        return self._create_user(email, name, password, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(verbose_name=_('email address'), unique=True, blank=False)
     name = models.CharField(_('name'), max_length=30, blank=True)
-    is_staff = models.BooleanField(
-        _('staff status'),
-        default=False,
-        help_text=_('Designates whether the user can log into this admin site.'),
-    )
     is_superuser = models.BooleanField(
         _('superuser'),
         default=False,
@@ -63,7 +66,15 @@ class User(AbstractBaseUser, PermissionsMixin):
             'Unselect this instead of deleting accounts.'
         ),
     )
-    recent_attend_date = models.DateTimeField(default=timezone.now)
+    is_admin = models.BooleanField(
+        _('admin'),
+        default=False,
+        help_text=_(
+            'Designates whether this user should be treated as admin. '
+            'Unselect this instead of deleting accounts.'
+        ),
+    )
+    recent_attend_date = models.DateField(default=datetime.date.today)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     team = models.ForeignKey(
@@ -97,8 +108,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.is_admin
 
     def __str__(self):
-        return f'email : {self.email}' \
-               f'name  : {self.name}'
+        return f'email : {self.email}'
 
 
 class UserProfile(models.Model):
