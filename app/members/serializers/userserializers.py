@@ -4,7 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 # 유저 list view 만들꺼임
-from members.models import User
+from ..models import User
 
 
 class UserSerializer(serializers.Serializer):
@@ -17,10 +17,13 @@ class UserSerializer(serializers.Serializer):
         default=datetime.date.today,
         format='%Y-%m-%d',
         input_formats=['%Y-%m-%d', 'iso-8601'])
+
     # created = serializers.DateTimeField()
     # updated = serializers.DateTimeField()
 
     def create(self, validated_data):
+        print("validation: ", validated_data)
+
         return User.objects.create_user(**validated_data)
 
     def update(self, instance, validated_data):
@@ -29,6 +32,6 @@ class UserSerializer(serializers.Serializer):
             instance.name = validated_data.get('name', instance.name)
         except Exception as ex:
             print('에러 발생', ex)
-        print(validated_data.get('recent_attend_date', instance.recent_attend_date))
+        # print(validated_data.get('recent_attend_date', instance.recent_attend_date))
         instance.recent_attend_date = validated_data.get('recent_attend_date', instance.recent_attend_date)
         return instance

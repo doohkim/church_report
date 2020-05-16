@@ -1,5 +1,6 @@
 import datetime
 
+from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 # from django.contrib.auth.models import AbstractUser
@@ -114,22 +115,28 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         primary_key=True,
+        unique=True,
+        related_name='user_profile'
     )
-    job = models.CharField(max_length=50, null=True, blank=True)
-    user_sex = [('MALE', 'Male'), ('FEMALE', 'Female')]
-    sex = models.CharField(max_length=6, default='Male', choices=user_sex)
+    job = models.CharField(max_length=50, null=True, blank=True, default='정보없음')
+    SEX = [('MALE', 'Male'), ('FEMALE', 'Female')]
+    sex = models.CharField(max_length=6, default='Male', choices=SEX)
     phone_number = PhoneNumberField(blank=True, null=True, unique=True)
-    age = models.PositiveSmallIntegerField()
-    address = models.CharField(max_length=255, null=True, blank=True)
+    age = models.PositiveSmallIntegerField(blank=True, null=True, default=20)
+    address = models.CharField(max_length=255, null=True, blank=True, default='정보없음')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     email_confirmed = models.BooleanField(default=False)
+    recent_attend_date = models.DateField(default=datetime.date.today)
 
+    # def save(self, force_insert=False, force_update=False, using=None,
+    #          update_fields=None):
+    #     self.
     def __str__(self):
-        return self.user
+        return self.user.name
 
 
 class UserImage(models.Model):
