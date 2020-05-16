@@ -18,7 +18,7 @@ class UserProfileListCreateAPIView(APIView):
 
     def post(self, request, format=None):
         data = request.data
-        # data['user'] = request.user
+        # data['user'] = request.user.id
         data['user'] = User.objects.get(email=data['email']).id
         print("data:  ", data)
 
@@ -31,23 +31,24 @@ class UserProfileListCreateAPIView(APIView):
 
 class UserProfileDetailAPIView(APIView):
 
-    def get_object(self,pk):
+    def get_object(self, pk):
         try:
             # return UserProfile.objects.get(user=self.request.user)
             return UserProfile.objects.get(pk=pk)
         except UserProfile.DoesNotExist:
             raise Http404
 
-    def get(self, request, pk,format=None):
+    def get(self, request, pk, format=None):
+        print('request.user: ', request.user)
         user = self.get_object(pk)
-        print(user)
+        # print(user)
         serializer = UserProfileSerializer(user)
         return Response(serializer.data)
 
     def put(self, request, pk, format=None):
         user_profile = self.get_object(pk)
         data = request.data
-        #data['user'] = request.user
+        # data['user'] = request.user.id
         data['user'] = pk
         # print("data:  ", data)
         serializer = UserProfileSerializer(user_profile, data=data)

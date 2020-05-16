@@ -28,10 +28,11 @@ class UserProfileSerializer(serializers.Serializer):
         return UserProfile.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        instance.user = User.objects.get(
-            pk=validated_data.get('pk', instance.pk)
-                                        )
+        # instance.user = User.objects.get(
+        #     pk=validated_data.get('pk', instance.pk)
+        #                                 )
         print('validated_data', validated_data)
+        print(validated_data.get('job', instance.job))
         try:
 
             instance.job = validated_data.get('job', instance.job)

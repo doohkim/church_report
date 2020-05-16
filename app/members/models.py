@@ -122,6 +122,7 @@ class UserProfile(models.Model):
         related_name='user_profile'
     )
     job = models.CharField(max_length=50, null=True, blank=True, default='정보없음')
+
     SEX = [('MALE', 'Male'), ('FEMALE', 'Female')]
     sex = models.CharField(max_length=6, default='Male', choices=SEX)
     phone_number = PhoneNumberField(blank=True, null=True, unique=True)
@@ -166,3 +167,5 @@ class Team(models.Model):
 
     def __str__(self):
         return self.name
+
+
