@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import User
+from .models import User, Team
 
 
 @admin.register(User)
@@ -29,3 +29,9 @@ class UserAdmin(admin.ModelAdmin):
     recent_attend_date.short_description = '최근 출석일'
     last_login_at.admin_order_field = 'last_login_at'
     last_login_at.short_description = '최근로그인'
+
+
+class TeamAdmin(admin.ModelAdmin):
+    fields = ['name']
+
+admin.site.register(Team, TeamAdmin)

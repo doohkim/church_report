@@ -1,4 +1,7 @@
-from django.contrib.auth.base_user import BaseUserManager,AbstractBaseUser
+import datetime
+
+from django.conf import settings
+from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 # from django.contrib.auth.models import AbstractUser
 from django.core.mail import send_mail
@@ -7,48 +10,55 @@ from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 from django.utils.translation import ugettext_lazy as _
 
+from records.models import Record
+
 
 class UserManager(BaseUserManager):
     # 무엇인지 파악 못하고 쓰는 것
     use_in_migrations = True
 
-    def _create_user(self, email, name, password=None, *args, **kwargs):
+    def _create_user(self, email, name, password=None, **extra_fields):
+        print(extra_fields)
         if not email:
             raise ValueError('The given email must be set')
         email = self.normalize_email(email)
-        user = self.model(email=email, name=name, *args, **kwargs)
+        user = self.model(email=email, name=name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
+        # profile = UserProfile(user=user)
+        # profile.save()
         return user
 
-    def create_user(self, email=None, name=None, password=None, *args, **kwargs):
-        kwargs.setdefault('is_staff', False)
-        kwargs.setdefault('is_superuser', False)
-        kwargs.setdefault('is_active', False)
+    def create_user(self, email=None, name=None, password=None, **extra_fields):
+        # extra_fields.setdefault('is_staff', False)
 
-        return self._create_user(email, name, password, *args, **kwargs)
+        extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault('is_active', False)
+        extra_fields.setdefault('is_admin', False)
 
-    def create_superuser(self, email, name, password, *args, **kwargs):
-        kwargs.setdefault('is_staff', True)
-        kwargs.setdefault('is_superuser', True)
-        kwargs.setdefault('is_active', True)
+        return self._create_user(email, name, password, **extra_fields)
 
-        if kwargs.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
-        if kwargs.get('is_superuser') is not True:
+    def create_superuser(self, email, name, password, **extra_fields):
+        # 왜 계속 오류나는 거지
+        # extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('is_admin', True)
+        # if extra_fields.get('is_staff') is not True:
+        #     raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
+        if extra_fields.get('is_active') is not True:
+            raise ValueError('Superuser must have is_active=True.')
+        if extra_fields.get('is_admin') is not True:
+            raise ValueError('Superuser must have is_admin=True.')
 
-        return self._create_user(email, name, password, *args, **kwargs)
+        return self._create_user(email, name, password, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(verbose_name=_('email address'), unique=True, blank=False)
     name = models.CharField(_('name'), max_length=30, blank=True)
-    is_staff = models.BooleanField(
-        _('staff status'),
-        default=False,
-        help_text=_('Designates whether the user can log into this admin site.'),
-    )
     is_superuser = models.BooleanField(
         _('superuser'),
         default=False,
@@ -63,7 +73,15 @@ class User(AbstractBaseUser, PermissionsMixin):
             'Unselect this instead of deleting accounts.'
         ),
     )
-    recent_attend_date = models.DateTimeField(default=timezone.now)
+    is_admin = models.BooleanField(
+        _('admin'),
+        default=False,
+        help_text=_(
+            'Designates whether this user should be treated as admin. '
+            'Unselect this instead of deleting accounts.'
+        ),
+    )
+    recent_attend_date = models.DateField(default=datetime.date.today)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     team = models.ForeignKey(
@@ -72,6 +90,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         null=True,
         help_text="무소속 혹은 6개월이상 출석하지 않을 경우 팀소속을 잃어버린다."
     )
+    # record_users = models.ManyToManyField(Record, related_name='record_user')
+
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -86,28 +107,47 @@ class User(AbstractBaseUser, PermissionsMixin):
     # def email_user(self, subject, message, from_email=None, **kwargs):
     #     send_mail(subject, message, from_email, [self.email], **kwargs)
 
+    def has_perm(self, perm, obj=None):
+        return True
+
+    def has_module_perms(self, app_label):
+        return True
+
+    @property
+    def is_staff(self):
+        return self.is_admin
+
     def __str__(self):
-        return self.name
+        return f'email : {self.email}'
 
 
 class UserProfile(models.Model):
     user = models.OneToOneField(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         primary_key=True,
+        unique=True,
+        related_name='user_profile'
     )
-    job = models.CharField(max_length=50, null=True, blank=True)
-    user_sex = [('MALE', 'Male'), ('FEMALE', 'Female')]
-    sex = models.CharField(max_length=6, default='Male', choices=user_sex)
+    job = models.CharField(max_length=50, null=True, blank=True, default='정보없음')
+
+    SEX = [('MALE', 'Male'), ('FEMALE', 'Female')]
+    sex = models.CharField(max_length=6, default='Male', choices=SEX)
     phone_number = PhoneNumberField(blank=True, null=True, unique=True)
-    age = models.PositiveSmallIntegerField()
-    address = models.CharField(max_length=255, null=True, blank=True)
+    age = models.PositiveSmallIntegerField(blank=True, null=True, default=20)
+    address = models.CharField(max_length=255, null=True, blank=True, default='정보없음')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     email_confirmed = models.BooleanField(default=False)
+    recent_attend_date = models.DateField(default=datetime.date.today)
 
+    # content = models.TextField(blank=True, null=True, default='')
+
+    # def save(self, force_insert=False, force_update=False, using=None,
+    #          update_fields=None):
+    #     self.
     def __str__(self):
-        return self.user
+        return self.user.name
 
 
 class UserImage(models.Model):
@@ -137,3 +177,22 @@ class Team(models.Model):
 
     def __str__(self):
         return self.name
+
+
+
+
+
+
+# class UserManager(models.Manager):
+#     ...
+#
+#     def create(self, username, email, is_premium_member=False, has_support_contract=False):
+#         user = User(username=username, email=email)
+#         user.save()
+#         profile = Profile(
+#             user=user,
+#             is_premium_member=is_premium_member,
+#             has_support_contract=has_support_contract
+#         )
+#         profile.save()
+#         return user
