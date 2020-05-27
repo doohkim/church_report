@@ -10,6 +10,8 @@ from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 from django.utils.translation import ugettext_lazy as _
 
+from records.models import Record
+
 
 class UserManager(BaseUserManager):
     # 무엇인지 파악 못하고 쓰는 것
@@ -23,10 +25,13 @@ class UserManager(BaseUserManager):
         user = self.model(email=email, name=name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
+        # profile = UserProfile(user=user)
+        # profile.save()
         return user
 
     def create_user(self, email=None, name=None, password=None, **extra_fields):
         # extra_fields.setdefault('is_staff', False)
+
         extra_fields.setdefault('is_superuser', False)
         extra_fields.setdefault('is_active', False)
         extra_fields.setdefault('is_admin', False)
@@ -85,6 +90,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         null=True,
         help_text="무소속 혹은 6개월이상 출석하지 않을 경우 팀소속을 잃어버린다."
     )
+    # record_users = models.ManyToManyField(Record, related_name='record_user')
+
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -133,6 +141,8 @@ class UserProfile(models.Model):
     email_confirmed = models.BooleanField(default=False)
     recent_attend_date = models.DateField(default=datetime.date.today)
 
+    # content = models.TextField(blank=True, null=True, default='')
+
     # def save(self, force_insert=False, force_update=False, using=None,
     #          update_fields=None):
     #     self.
@@ -169,3 +179,20 @@ class Team(models.Model):
         return self.name
 
 
+
+
+
+
+# class UserManager(models.Manager):
+#     ...
+#
+#     def create(self, username, email, is_premium_member=False, has_support_contract=False):
+#         user = User(username=username, email=email)
+#         user.save()
+#         profile = Profile(
+#             user=user,
+#             is_premium_member=is_premium_member,
+#             has_support_contract=has_support_contract
+#         )
+#         profile.save()
+#         return user

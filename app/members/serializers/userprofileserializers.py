@@ -22,6 +22,7 @@ class UserProfileSerializer(serializers.Serializer):
         format='%Y-%m-%d',
         input_formats=['%Y-%m-%d', 'iso-8601']
     )
+    # content = serializers.(blank=True, null=True, default='')
 
     def create(self, validated_data):
         print("validated_data: ", validated_data)
@@ -31,35 +32,24 @@ class UserProfileSerializer(serializers.Serializer):
         # instance.user = User.objects.get(
         #     pk=validated_data.get('pk', instance.pk)
         #                                 )
-        print('validated_data', validated_data)
-        print(validated_data.get('job', instance.job))
+        # print('validated_data', validated_data)
         try:
-
             instance.job = validated_data.get('job', instance.job)
         except Exception as ex:
             print('에러 발생, job ', ex)
         try:
-
-            instance.job = validated_data.get('job', instance.job)
-        except Exception as ex:
-            print('에러 발생, job ', ex)
-        try:
-
             instance.sex = validated_data.get('sex', instance.sex)
         except Exception as ex:
             print('에러 발생 sex', ex)
         try:
-
             instance.phone_number = validated_data.get('phone_number', instance.phone_number)
         except Exception as ex:
             print('에러 발생 phone_number', ex)
         try:
-
             instance.address = validated_data.get('address', instance.address)
         except Exception as ex:
             print('에러 발생 address', ex)
         try:
-
             instance.recent_attend_date = validated_data.get('recent_attend_date', instance.recent_attend_date)
         except Exception as ex:
             print('에러 발생 recent_attend_date', ex)

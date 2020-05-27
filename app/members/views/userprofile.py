@@ -51,7 +51,7 @@ class UserProfileDetailAPIView(APIView):
         # data['user'] = request.user.id
         data['user'] = pk
         # print("data:  ", data)
-        serializer = UserProfileSerializer(user_profile, data=data)
+        serializer = UserProfileSerializer(user_profile, data=data, partial=True)
         # print(serializer)
         if serializer.is_valid():
             serializer.save()
@@ -62,3 +62,43 @@ class UserProfileDetailAPIView(APIView):
         user_profile = self.get_object(pk)
         user_profile.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#
+#
+#
+# from datetime import datetime
+#
+# class Comment(object):
+#     def __init__(self, email, content, created=None):
+#         self.email = email
+#         self.content = content
+#         self.created = created or datetime.now()
+#
+# comment = Comment(email='leila@example.com', content='foo bar')
+#
+
+

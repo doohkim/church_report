@@ -35,3 +35,11 @@ class UserSerializer(serializers.Serializer):
         # print(validated_data.get('recent_attend_date', instance.recent_attend_date))
         instance.recent_attend_date = validated_data.get('recent_attend_date', instance.recent_attend_date)
         return instance
+
+# def create(self, validated_data):
+#     return User.objects.create(
+#         username=validated_data['username'],
+#         email=validated_data['email'],
+#         is_premium_member=validated_data['profile']['is_premium_member'],
+#         has_support_contract=validated_data['profile']['has_support_contract']
+#     )
