@@ -11,13 +11,9 @@ class RecordSerializer(serializers.ModelSerializer):
     # Test
     # user = UserSerializer(read_only=True, many=True)
     # user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
-
-    # user 단독 유저 한병이면 어떻게 되는가
-    user = UserSerializer(read_only=True, many=True)
-
     class Meta:
         model = Record
-        fields = ('id', 'title', 'user')
+        fields = ('id', 'title',)
 
     def create(self, validated_data):
         record = Record.objects.create(**validated_data)
@@ -25,14 +21,53 @@ class RecordSerializer(serializers.ModelSerializer):
 
 
 class RecordResultSerializer(serializers.ModelSerializer):
-    # user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    # record = serializers.PrimaryKeyRelatedField(queryset=Record.objects.all())
-    user = UserSerializer(required=False, many=True)
+    user = UserSerializer(required=False)
     record = RecordSerializer(required=False)
 
     class Meta:
         model = RecordResult
         fields = ('user', 'record', 'service_type', 'pre_search', 'attend')
+
+    def to_representation(self, instance):
+        return UserSerializer(instance).data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        # class BookListSerializer(serializers.ListSerializer):
+    #     def create(self, validated_data):
+    #         books = [Book(**item) for item in validated_data]
+    #         return Book.objects.bulk_create(books)
+    #
+    # class BookSerializer(serializers.Serializer):
+    #     ...
+    #
+    #     class Meta:
+    #         list_serializer_class = BookListSerializer
+    #
+    # class ProfileFeedItemListSerializer(serializers.ListSerializer):
+    #     def create(self, validated_data):
+    #         feed_list = [ProfileFeedItem(**item) for item in validated_data]
+    #         return ProfileFeedItem.objects.bulk_create(feed_list)
+    #
+    # class ProfileFeedItemSerializer(serializers.ModelSerializer):
+    #     """A serializer for profile feed items."""
+    #
+    #     class Meta:
+    #         model = models.ProfileFeedItem
+    #         list_serializer_class = ProfileFeedItemListSerializer
+    #         fields = ('id', 'user_profile', 'status_text', 'created_on')
+    #         extra_kwargs = {'user_profile': {'read_only': True}}
 
 # class RecordSerializer(serializers.Serializer):
 #     id = serializers.IntegerField(read_only=True)
@@ -65,5 +100,3 @@ class RecordResultSerializer(serializers.ModelSerializer):
 #
 #     instance.save()
 #     return instance
-
-
