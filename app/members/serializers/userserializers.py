@@ -4,7 +4,13 @@ from django.utils import timezone
 from rest_framework import serializers
 
 # 유저 list view 만들꺼임
-from ..models import User
+from ..models import User, Team
+
+
+class TeamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Team
+        fields = ('name')
 
 
 class UserSerializer(serializers.Serializer):
@@ -13,6 +19,9 @@ class UserSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=30, allow_blank=True)
     is_superuser = serializers.BooleanField(default=False)
     is_active = serializers.BooleanField(default=False)
+
+    team = TeamSerializer(required=False)
+
     recent_attend_date = serializers.DateField(
         default=datetime.date.today,
         format='%Y-%m-%d',

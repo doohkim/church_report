@@ -1,8 +1,8 @@
 from django.urls import path
 
-from records.views.record import RecordListCreateAPIView, RecordResultRetrieveUpdateDestroyAPIVew
+from records.views.record import *
 
 urlpatterns = [
     path('', RecordListCreateAPIView.as_view()),
-    path('result/<title>/', RecordResultRetrieveUpdateDestroyAPIVew.as_view()),
+    path('result/<title>/', RecordResultDetail.as_view()),
 ]
